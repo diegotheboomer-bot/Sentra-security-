@@ -7,7 +7,8 @@ Private, single-owner pilot for authorized public configuration checks of atlasc
 - Real Worker-side GET requests, streamed progress, and stop requests.
 - HTTPS response, HTTP upgrade, HSTS, CSP, embedding protection, MIME protection, referrer policy, cookie flags and static insecure resource references.
 - Fixed hostname enforced on the server; no client-supplied targets, custom headers, credentials or payloads.
-- Six-request maximum, bounded redirects, 1.1-second pacing, eight-second request timeouts and 25-second overall budget.
+- Nine-request maximum, bounded redirects, 1.1-second pacing, eight-second request timeouts and 40-second overall budget.
+- Extended checks (v1.1): CSP strength, Permissions-Policy, technology disclosure, third-party scripts without SRI, insecure form targets, security.txt, exposed `/.git/HEAD` and `/.env` (signature match only; contents never stored), reflected-origin CORS on the homepage, and public SPF/DMARC/CAA/DNSSEC records via DNS-over-HTTPS. Every probe is a GET to a fixed path on the approved host.
 - DNS preflight blocks nonpublic answers. Worker fetch resolves independently; this is NOT a generic URL-fetch service or DNS-rebinding-proof scanner. The fixed allowlist is intentional.
 - Shared R2 conditional lease gives a 60-second cooldown across isolates.
 - R2 report storage, latest 30 retained; JSON/Markdown export and printable report.

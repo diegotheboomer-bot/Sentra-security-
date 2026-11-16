@@ -179,6 +179,10 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;paddin
 .result-title{flex:1;min-width:0}
 .result-title strong{font-weight:600;font-size:15px}
 .result-title p{margin:0;font-size:14px}
+.sev{margin-left:8px;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--neutral-soft);color:var(--muted);white-space:nowrap}
+.sev.high{background:#fde8e6;color:#b42318}
+.sev.medium{background:var(--warn-soft);color:var(--warn)}
+@media(prefers-color-scheme:dark){.sev.high{background:#33191a;color:#f08a80}}
 .outcome-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--neutral-soft);color:var(--muted);white-space:nowrap}
 .outcome-badge .s-icon{width:13px;height:13px}
 .outcome-badge.attention{background:var(--warn-soft);color:var(--warn)}

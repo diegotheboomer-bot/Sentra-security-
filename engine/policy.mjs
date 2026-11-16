@@ -1,4 +1,4 @@
-export const POLICY = Object.freeze({host:'atlasclipping.com',maxRequests:6,maxBytes:262144,requestTimeoutMs:8000,totalTimeoutMs:25000,minIntervalMs:1100,cooldownMs:60000,version:'1.0.0'});
+export const POLICY = Object.freeze({host:'atlasclipping.com',maxRequests:9,maxBytes:262144,requestTimeoutMs:8000,totalTimeoutMs:40000,minIntervalMs:1100,cooldownMs:60000,version:'1.1.0'});
 export class ScanError extends Error {constructor(code,message){super(message);this.code=code;}}
 export function targetURL(input){let u;try{u=new URL(input)}catch{throw new ScanError('scope','Invalid URL.')}if(u.hostname!==POLICY.host||u.username||u.password||u.port||!['http:','https:'].includes(u.protocol))throw new ScanError('scope','Destination is outside the authorized target.');u.hash='';return u;}
 export function redirectURL(current,location){let next;try{next=targetURL(new URL(location,current).href)}catch{throw new ScanError('redirect_scope','Redirect left the authorized host; it was not followed.')}if(new URL(current).protocol==='https:'&&next.protocol!=='https:')throw new ScanError('downgrade','HTTPS downgrade redirect was not followed.');return next;}
