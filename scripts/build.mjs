@@ -1,0 +1,5 @@
+import fs from 'node:fs/promises';
+const assets={};for(const name of await fs.readdir('public')){const type=name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.css')?'text/css; charset=utf-8':name.endsWith('.txt')?'text/plain; charset=utf-8':'text/javascript; charset=utf-8';assets['/'+name]={type,body:await fs.readFile('public/'+name,'utf8')}}
+await fs.rm('dist',{recursive:true,force:true});
+let code='';for(const name of ['engine/policy.mjs','engine/checks.mjs','engine/scanner.mjs','engine/accounts.mjs','worker/index.mjs']){let s=await fs.readFile(name,'utf8');s=s.replace(/^import .*;\n/gm,'').replace(/^export /gm,'');code+=s+'\n';}
+code+='\nexport default workerWithAssets('+JSON.stringify(assets)+');\n';await fs.mkdir('dist/server',{recursive:true});await fs.writeFile('dist/server/index.js',code);await fs.mkdir('dist/.openai',{recursive:true});await fs.copyFile('.openai/hosting.json','dist/.openai/hosting.json');console.log('Worker bundled with '+Object.keys(assets).length+' assets ('+Buffer.byteLength(code)+' bytes).');

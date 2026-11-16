@@ -1,0 +1,14 @@
+.env*
+.dev.vars*
+node_modules/
+.sites-runtime/
+.wrangler/
+last-live-check.json
+
+# Build outputs and local scan evidence
+dist/
+outputs/
+coverage/
+*.log
+# Commit variable names only, never secrets
+!.env.example

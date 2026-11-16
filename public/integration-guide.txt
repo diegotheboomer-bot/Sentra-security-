@@ -1,0 +1,78 @@
+# Sentra staging account connector v1
+
+Status: Sentra-side connector implemented. Your app-side adapter is not installed.
+No accounts are created until the adapter and three server settings are configured.
+
+## Where to integrate
+Add a restricted server endpoint to your staging app on staging.atlasclipping.com.
+Use your app's existing auth provider and database to create synthetic users.
+The production Atlas Clipping source is not present in this workspace, so this
+part cannot be implemented here yet.
+
+## Server settings in Sentra
+ACCOUNT_CONNECTOR_URL=https://staging.atlasclipping.com/<your-restricted-endpoint>
+ACCOUNT_CONNECTOR_TOKEN=<a random secret of at least 32 characters>
+ACCOUNT_AUTOMATION_ENABLED=true
+Store these through the hosting secret manager, never browser code or chat.
+Configure the same token in your staging adapter. Rotate both together.
+
+## Authentication and constraints
+Accept POST JSON only. Require a constant-time comparison of the Bearer token.
+Fail closed unless the application is running in staging. Disallow external
+email, SMS, payments and customer integrations. No production database access.
+Restrict tokens to test-user provisioning and removal; never grant general admin API access.
+Store a unique runId/action result transactionally and replay it for duplicate requests.
+Do not create additional users on retry. Expire test accounts and data after one hour
+through an app-owned expiry mechanism, even if Sentra never calls cleanup.
+All deletes must filter both the exact runId AND an immutable synthetic marker.
+Clean up partial provisioning and related records, sessions and test organizations.
+
+## Request (all actions share the same endpoint)
+Authorization: Bearer <secret>
+Idempotency-Key: <runId>:<action>
+{
+  "version": 1,
+  "action": "health | provision | cleanup",
+  "runId": "UUID",
+  "environment": "staging",
+  "expiresInSeconds": 3600,
+  "accounts": [
+    {"role":"admin","organization":"sentra-a"},
+    {"role":"member","organization":"sentra-a"},
+    {"role":"member","organization":"sentra-b"}
+  ]
+}
+
+## Health response (no users created)
+{"protocolVersion":1,"environment":"staging","runId":"<same UUID>","syntheticOnly":true,"supportsCleanup":true}
+
+## Provision response
+Use run-scoped organizations, not shared global organizations. Mark records as
+synthetic and attach runId. Generate secrets in your identity provider; never
+return passwords, verification links, access tokens, or cookies to this endpoint.
+Return exactly the three requested identities. IDs must contain only letters,
+numbers, underscores or hyphens, with a maximum of 100 characters.
+{"protocolVersion":1,"environment":"staging","runId":"<same UUID>","accounts":[
+ {"id":"test_admin_id","role":"admin","organization":"sentra-a","synthetic":true},
+ {"id":"test_member_a_id","role":"member","organization":"sentra-a","synthetic":true},
+ {"id":"test_member_b_id","role":"member","organization":"sentra-b","synthetic":true}
+]}
+
+## Cleanup response
+Cleanup must be idempotent and must work after partial failures. Remove only
+records owned by this run. Return success even when these records are already gone.
+{"protocolVersion":1,"environment":"staging","runId":"<same UUID>","cleaned":true}
+
+## Integration checklist
+- Unauthorized token rejected; non-staging environment rejected.
+- Duplicate provision requests create one set, not more accounts.
+- Accounts match their roles and organization boundaries.
+- External integrations produce no real side effects.
+- Cleanup cannot delete ordinary users and handles partial runs.
+- Expiry runs independently of Sentra and removes sessions/test data.
+
+## Current boundaries
+The connector provisions account references and supports cleanup. It does not
+execute browser sign-in or authenticated security tests. Browser workers, secure
+session handoff, multi-customer ownership verification, and scheduled provisioning
+are future work. There is no automatic registration on arbitrary websites.
